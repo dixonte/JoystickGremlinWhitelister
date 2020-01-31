@@ -8,3 +8,9 @@ Automatically whitelists [Joystick Gremlin](https://github.com/WhiteMagic/Joysti
 
 # Proof of Concept only
 Feel free to use this code. I'm unsure if I want to polish it up more or release it yet.
+
+# To-do list
+- Installer
+- Verify joystick_gremlin.exe process
+  - Perhaps hash the file at install and store hash for checking at runtime?
+- Allow basic configuration in case this is useful for other programs besides Joystick Gremlin
