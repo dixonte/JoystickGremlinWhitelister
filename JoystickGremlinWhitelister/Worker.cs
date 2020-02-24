@@ -15,6 +15,8 @@ namespace JoystickGremlinWhitelister
         private const string TARGET_INSTANCE_NAME = "joystick_gremlin.exe";
         private const uint POLL_INTERVAL_SEC = 2;
 
+        private const string INPUTDEV_CLASS = "{745a17a0-74d3-11d0-b6fe-00a0c90f57da}";
+
         private readonly ILogger<Worker> _logger;
 
         public Worker(ILogger<Worker> logger)
@@ -113,28 +115,52 @@ namespace JoystickGremlinWhitelister
                     {
                         string toggleVictim = null;
 
-                        Contrib.DisableHardware.DisableDevice(s =>
+                        using (var q = new ManagementObjectSearcher(@"\\.\root\CIMV2", $"SELECT * FROM Win32_PnPEntity WHERE ClassGuid = '{INPUTDEV_CLASS}'"))
+                        using (var c = q.Get())
                         {
-                            var hid = s.Split('\0').Where(x => x.StartsWith("HID")).OrderByDescending(x => x.Length).FirstOrDefault();
-
-                            if (string.IsNullOrWhiteSpace(hid))
-                                return false;
-
-                            if (affectedDevices.Contains(hid))
+                            foreach (var o in c)
                             {
-                                _logger.LogInformation($"Toggling affected device: {hid}");
+                                if (o.GetPropertyValue("HardwareID") is string[] hids && hids.Any(h => affectedDevices.Contains(h)))
+                                {
+                                    using (var qn = new ManagementObjectSearcher(@"\\.\root\CIMV2", $"SELECT * FROM Win32_PnPEntity WHERE DeviceID = '{o.GetPropertyValue("DeviceID").ToString().Replace(@"HID\", @"USB\").Replace(@"\", @"\\")}'"))
+                                    using (var cn = qn.Get())
+                                    {
+                                        foreach (var on in cn)
+                                        {
 
-                                toggleVictim = s;
-                                return true;
+                                        }
+                                    }
+                                    
+                                    using (var cls = new ManagementClass(o.ClassPath))
+                                    {
+                                        cls.InvokeMethod("Reset", null);
+                                    }
+                                }
                             }
-
-                            return false;
-                        }, true);
-
-                        if (toggleVictim != null)
-                        {
-                            Contrib.DisableHardware.DisableDevice(s => s == toggleVictim, false);
                         }
+
+                        //Contrib.DisableHardware.DisableDevice((hids, desc) =>
+                        //{
+                        //    var hid = hids.Split('\0').Where(x => x.StartsWith("HID")).OrderByDescending(x => x.Length).FirstOrDefault();
+
+                        //    if (string.IsNullOrWhiteSpace(hid))
+                        //        return false;
+
+                        //    if (affectedDevices.Contains(hid))
+                        //    {
+                        //        _logger.LogInformation($"Toggling affected device: {hid}");
+
+                        //        toggleVictim = hids;
+                        //        return true;
+                        //    }
+
+                        //    return false;
+                        //}, true);
+
+                        //if (toggleVictim != null)
+                        //{
+                        //    Contrib.DisableHardware.DisableDevice((s, desc) => s == toggleVictim, false);
+                        //}
                     }
                 }
             }
