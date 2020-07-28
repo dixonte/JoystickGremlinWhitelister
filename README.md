@@ -1,5 +1,5 @@
 # Superseded
-This project has now been superseded by [HidVanguard](https://github.com/dixonte/HidVanguard)
+This project has now been superseded by [HidVanguard](https://github.com/dixonte/HidVanguard).
 
 # Joystick Gremlin Whitelister
 Automatically whitelists [Joystick Gremlin](https://github.com/WhiteMagic/JoystickGremlin) with [HidGuardian](https://github.com/ViGEm/HidGuardian), without the need for HidCerberus or for running Joystick Gremlin as administrator.
